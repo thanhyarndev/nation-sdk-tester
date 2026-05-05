@@ -342,7 +342,7 @@
               <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem;">
                 <th style="padding: 0.5rem;">EPC</th>
                 <th style="padding: 0.5rem;">RSSI</th>
-                <th style="padding: 0.5rem;">Count</th>
+                <th style="padding: 0.5rem;">Count (Detected)</th>
                 <th style="padding: 0.5rem;">Time</th>
               </tr>
             </thead>
@@ -364,7 +364,7 @@
   </div>
 
   <script type="module">
-    import { NWRFID } from './nw-rfid.js?v=13';
+    import { NWRFID } from './nw-rfid.js?v=14';
 
     const rfid = new NWRFID();
 
@@ -508,7 +508,7 @@
       row.innerHTML = `
         <td style="padding: 0.5rem; font-family: monospace; color: #10b981; font-weight: bold;">${tag.epc}</td>
         <td style="padding: 0.5rem; color: ${tag.highestRssi > -60 ? '#10b981' : '#f59e0b'};">${tag.highestRssi}</td>
-        <td style="padding: 0.5rem;">${tag.readCount}</td>
+        <td style="padding: 0.5rem; font-weight: bold;">${tag.detectedCount}</td>
         <td style="padding: 0.5rem; color: var(--text-muted);">${timeStr}</td>
       `;
       

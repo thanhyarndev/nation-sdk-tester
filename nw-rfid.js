@@ -433,7 +433,8 @@ export class NWRFID {
         lastSeen: now,
         timestamps: [now], // Store array of timestamps for sliding window
         highestRssi: tag.rssi,
-        lastReportedTime: 0
+        lastReportedTime: 0,
+        detectedCount: 0
       };
       this.tagCache.set(tag.epc, cacheData);
     } else {
@@ -469,10 +470,12 @@ export class NWRFID {
     // 3. Sleep / Stability Logic (Debounce)
     if (now - cacheData.lastReportedTime >= this.sleepTime) {
       cacheData.lastReportedTime = now;
+      cacheData.detectedCount += 1;
       
       const detectedTag = {
         ...tag,
         readCount: cacheData.timestamps.length,
+        detectedCount: cacheData.detectedCount,
         highestRssi: cacheData.highestRssi,
         detectedAt: new Date(now)
       };
