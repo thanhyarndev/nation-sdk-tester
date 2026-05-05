@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NATION SDK - WebSerial Tester</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #0f172a;
+      --surface: rgba(30, 41, 59, 0.7);
+      --border: rgba(255, 255, 255, 0.1);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-card {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 2.5rem 2rem;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      background: linear-gradient(to right, #60a5fa, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin-bottom: 1.25rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      margin-bottom: 0.75rem;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn-danger {
+      background: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-success {
+      background: var(--success);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #059669;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 1.25rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .status-dot.connected {
+      background: var(--success);
+      box-shadow: 0 0 12px var(--success);
+    }
+
+    .control-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .control-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      color: white;
+      padding: 0.85rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus {
+      border-color: var(--primary);
+    }
+
+    select option {
+      background: var(--bg);
+      color: white;
+    }
+
+    select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .terminal {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85rem;
+      height: 250px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      color: #34d399;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .terminal span.time {
+      color: #64748b;
+      font-size: 0.8rem;
+    }
+
+    .terminal span.info {
+      color: #60a5fa;
+    }
+
+    .terminal span.warn {
+      color: #fbbf24;
+    }
+
+    .terminal span.error {
+      color: #f87171;
+    }
+
+    .terminal-card {
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="card header-card">
+      <h1>NATION SDK Tester</h1>
+      <p class="subtitle">Event-Driven WebSerial Interface</p>
+
+      <div class="status-badge">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Disconnected</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Connection</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select your RFID serial port (e.g.
+        COM3 or /dev/ttyUSB0).</p>
+      <button class="btn" id="btnConnect">Connect Reader</button>
+      <button class="btn btn-danger" id="btnDisconnect" disabled>Disconnect</button>
+    </div>
+
+    <div class="card">
+      <h2>Hardware Configuration</h2>
+      <div class="control-group">
+        <label for="levelSelect">Detection Level (Antenna Power)</label>
+        <select id="levelSelect" disabled>
+          <option value="1">Level 1 (Ant1:12, Ant2:10, Ant3:10)</option>
+          <option value="2">Level 2 (Ant1:14, Ant2:12, Ant3:12)</option>
+          <option value="3" selected>Level 3 (Ant1:16, Ant2:13, Ant3:13)</option>
+          <option value="4">Level 4 (Ant1:17, Ant2:14, Ant3:14)</option>
+          <option value="5">Level 5 (Ant1:18, Ant2:15, Ant3:15)</option>
+          <option value="6">Level 6 (Ant1:19, Ant2:17, Ant3:17)</option>
+          <option value="7">Level 7 (Ant1:20, Ant2:18, Ant3:18)</option>
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <button class="btn btn-success" id="btnSetLevel" disabled>Set Level</button>
+        <button class="btn" style="background: #8b5cf6;" id="btnGetPower" disabled>Get Power</button>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+        <button class="btn" style="background: #3b82f6;" id="btnStart" disabled>▶ Start Scan</button>
+        <button class="btn btn-danger" id="btnStop" disabled>⏹ Stop Scan</button>
+      </div>
+    </div>
+
+    <!-- Filters Configuration -->
+    <div class="card configuration-card" style="margin-top: 1.25rem;">
+      <h2>Filters & Stability</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">
+        <div class="form-group">
+          <label>Prefix Filter</label>
+          <input type="text" id="inputPrefix" placeholder="e.g. E280" style="width:100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-primary); color: white;">
+        </div>
+        <div class="form-group">
+          <label>Min RSSI (dBm)</label>
+          <input type="number" id="inputMinRssi" value="-100" style="width:100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-primary); color: white;">
+        </div>
+        <div class="form-group">
+          <label>Min Count</label>
+          <input type="number" id="inputMinCount" value="1" style="width:100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-primary); color: white;">
+        </div>
+        <div class="form-group">
+          <label>Time Window (ms)</label>
+          <input type="number" id="inputCountWindow" value="2000" style="width:100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-primary); color: white;">
+        </div>
+        <div class="form-group">
+          <label>Sleep Time (ms)</label>
+          <input type="number" id="inputSleepTime" value="5000" style="width:100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-primary); color: white;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Tables Section -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.25rem;">
+      <!-- Raw Tags Table -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+          <h2 style="margin: 0; font-size: 1.1rem;">Raw Data (All Reads)</h2>
+          <span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #c4b5fd;" id="rawCount">0</span>
+        </div>
+        <div style="max-height: 300px; overflow-y: auto;">
+          <table style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem;">
+                <th style="padding: 0.5rem;">EPC</th>
+                <th style="padding: 0.5rem;">Ant</th>
+                <th style="padding: 0.5rem;">RSSI</th>
+                <th style="padding: 0.5rem;">Count</th>
+              </tr>
+            </thead>
+            <tbody id="rawTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detected Tags Table -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+          <h2 style="margin: 0; font-size: 1.1rem; color: #10b981;">Detected (Stable)</h2>
+          <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7;" id="detectedCount">0</span>
+        </div>
+        <div style="max-height: 300px; overflow-y: auto;">
+          <table style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem;">
+                <th style="padding: 0.5rem;">EPC</th>
+                <th style="padding: 0.5rem;">RSSI</th>
+                <th style="padding: 0.5rem;">Count</th>
+                <th style="padding: 0.5rem;">Time</th>
+              </tr>
+            </thead>
+            <tbody id="detectedTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card terminal-card">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1.25rem;">
+        <h2 style="margin: 0; border: none; padding: 0;">Activity Log</h2>
+        <button id="btnClear"
+          style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">Clear</button>
+      </div>
+      <div class="terminal" id="terminal"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { NWRFID } from './nw-rfid.js?v=13';
+
+    const rfid = new NWRFID();
+
+    // UI Elements
+    const btnConnect = document.getElementById('btnConnect');
+    const btnDisconnect = document.getElementById('btnDisconnect');
+    const levelSelect = document.getElementById('levelSelect');
+    const btnSetLevel = document.getElementById('btnSetLevel');
+    const btnGetPower = document.getElementById('btnGetPower');
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const terminal = document.getElementById('terminal');
+    const btnClear = document.getElementById('btnClear');
+
+    const inputPrefix = document.getElementById('inputPrefix');
+    const inputMinCount = document.getElementById('inputMinCount');
+    const inputMinRssi = document.getElementById('inputMinRssi');
+
+    const inputCountWindow = document.getElementById('inputCountWindow');
+    const inputSleepTime = document.getElementById('inputSleepTime');
+
+    const rawTableBody = document.getElementById('rawTableBody');
+    const detectedTableBody = document.getElementById('detectedTableBody');
+    const rawCount = document.getElementById('rawCount');
+    const detectedCount = document.getElementById('detectedCount');
+
+    // UI Maps
+    const rawUiMap = new Map();
+    const detectedUiMap = new Map();
+
+    // Bind Filter Inputs
+    inputPrefix.addEventListener('input', (e) => rfid.setAccessFilter(e.target.value));
+    inputMinCount.addEventListener('input', (e) => rfid.setMinCount(parseInt(e.target.value) || 1));
+    inputMinRssi.addEventListener('input', (e) => rfid.setMinRssi(parseInt(e.target.value) || -100));
+    inputCountWindow.addEventListener('input', (e) => rfid.setCountWindow(parseInt(e.target.value) || 2000));
+    inputSleepTime.addEventListener('input', (e) => rfid.setSleepTime(parseInt(e.target.value) || 5000));
+
+    // Logger Utility
+    function log(message, type = 'info') {
+      const el = document.createElement('div');
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+      el.innerHTML = `<span class="time">[${time}]</span> <span class="${type}">${message}</span>`;
+      terminal.appendChild(el);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    // Override console.log temporarily to capture SDK logs in UI
+    const originalLog = console.log;
+    console.log = function (...args) {
+      log(args.join(' '));
+      originalLog.apply(console, args);
+    };
+
+    const originalError = console.error;
+    console.error = function (...args) {
+      log(args.join(' '), 'error');
+      originalError.apply(console, args);
+    };
+
+    btnClear.addEventListener('click', () => {
+      terminal.innerHTML = '';
+    });
+
+    // Device Events
+    rfid.on('connect', () => {
+      statusDot.classList.add('connected');
+      statusText.textContent = 'Connected';
+      statusText.style.color = '#10b981';
+
+      btnConnect.disabled = true;
+      btnDisconnect.disabled = false;
+      levelSelect.disabled = false;
+      btnSetLevel.disabled = false;
+      btnGetPower.disabled = false;
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+    });
+
+    rfid.on('disconnect', () => {
+      statusDot.classList.remove('connected');
+      statusText.textContent = 'Disconnected';
+      statusText.style.color = '';
+
+      btnConnect.disabled = false;
+      btnDisconnect.disabled = true;
+      levelSelect.disabled = true;
+      btnSetLevel.disabled = true;
+      btnGetPower.disabled = true;
+      btnStart.disabled = true;
+      btnStop.disabled = true;
+    });
+
+    rfid.on('error', (err) => {
+      console.error(`SDK Error: ${err.message || err}`);
+    });
+
+    rfid.on('tag', (tag) => {
+      // Highlight the tag data in the console
+      console.log(`[TAG] EPC: ${tag.epc} | Ant: ${tag.antenna} | RSSI: ${tag.rssi}dBm | Freq: ${tag.frequency}MHz`);
+      
+      // Update Raw UI Table
+      rawUiMap.set(tag.epc, tag);
+      rawCount.textContent = rawUiMap.size;
+      
+      let row = document.getElementById(`raw-${tag.epc}`);
+      if (!row) {
+        row = document.createElement('tr');
+        row.id = `raw-${tag.epc}`;
+        row.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+        row.style.fontSize = '0.85rem';
+        rawTableBody.prepend(row);
+      }
+      
+      row.innerHTML = `
+        <td style="padding: 0.5rem; font-family: monospace;">${tag.epc}</td>
+        <td style="padding: 0.5rem;">${tag.antenna}</td>
+        <td style="padding: 0.5rem; color: ${tag.rssi > -60 ? '#10b981' : '#f59e0b'};">${tag.rssi}</td>
+        <td style="padding: 0.5rem;">${tag.readCount}</td>
+      `;
+    });
+
+    rfid.on('tag_detected', (tag) => {
+      // Update Detected UI Table
+      detectedUiMap.set(tag.epc, tag);
+      detectedCount.textContent = detectedUiMap.size;
+      
+      let row = document.getElementById(`det-${tag.epc}`);
+      if (!row) {
+        row = document.createElement('tr');
+        row.id = `det-${tag.epc}`;
+        row.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+        row.style.fontSize = '0.85rem';
+        row.style.transition = 'background-color 0.3s ease';
+        detectedTableBody.prepend(row);
+      }
+      
+      const timeStr = tag.detectedAt.toLocaleTimeString('en-US', { hour12: false });
+      
+      row.innerHTML = `
+        <td style="padding: 0.5rem; font-family: monospace; color: #10b981; font-weight: bold;">${tag.epc}</td>
+        <td style="padding: 0.5rem; color: ${tag.highestRssi > -60 ? '#10b981' : '#f59e0b'};">${tag.highestRssi}</td>
+        <td style="padding: 0.5rem;">${tag.readCount}</td>
+        <td style="padding: 0.5rem; color: var(--text-muted);">${timeStr}</td>
+      `;
+      
+      // Flash effect
+      row.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+      setTimeout(() => {
+        row.style.backgroundColor = 'transparent';
+      }, 500);
+    });
+
+    // User Actions
+    btnConnect.addEventListener('click', async () => {
+      try {
+        log('Requesting serial port connection...', 'warn');
+        await rfid.connect();
+      } catch (err) {
+        log(`Connection failed: ${err.message}`, 'error');
+      }
+    });
+
+    btnDisconnect.addEventListener('click', async () => {
+      try {
+        await rfid.disconnect();
+        log('Disconnected gracefully.', 'warn');
+      } catch (err) {
+        log(`Disconnection error: ${err.message}`, 'error');
+      }
+    });
+
+    btnSetLevel.addEventListener('click', async () => {
+      const level = parseInt(levelSelect.value, 10);
+      try {
+        btnSetLevel.disabled = true;
+        await rfid.setDetectionLevel(level);
+        // Note: log is generated automatically inside SDK
+      } catch (err) {
+        log(`Set level error: ${err.message}`, 'error');
+      } finally {
+        btnSetLevel.disabled = false;
+      }
+    });
+
+    btnGetPower.addEventListener('click', async () => {
+      try {
+        btnGetPower.disabled = true;
+        await rfid.getPower();
+        // Note: log is generated automatically inside SDK
+      } catch (err) {
+        log(`Get power error: ${err.message}`, 'error');
+      } finally {
+        btnGetPower.disabled = false;
+      }
+    });
+
+    btnStart.addEventListener('click', async () => {
+      try {
+        btnStart.disabled = true;
+        // Clear UI tables on start
+        rawTableBody.innerHTML = '';
+        detectedTableBody.innerHTML = '';
+        rawUiMap.clear();
+        detectedUiMap.clear();
+        rawCount.textContent = '0';
+        detectedCount.textContent = '0';
+        
+        await rfid.startInventory();
+        btnStop.disabled = false;
+      } catch (err) {
+        log(`Start error: ${err.message}`, 'error');
+        btnStart.disabled = false;
+      }
+    });
+
+    btnStop.addEventListener('click', async () => {
+      try {
+        btnStop.disabled = true;
+        await rfid.stopInventory();
+        btnStart.disabled = false;
+      } catch (err) {
+        log(`Stop error: ${err.message}`, 'error');
+        btnStop.disabled = false;
+      }
+    });
+
+    // Ready
+    log('Tester UI initialized. WebSerial API requires HTTPS or localhost.', 'warn');
+  </script>
+</body>
+
+</html>
